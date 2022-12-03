@@ -1,5 +1,5 @@
 const express = require("express");
-const { ApolloClient, InMemoryCache, gql } = require("@apollo/client");
+const { client } = require("apollo");
 const fetch = require("cross-fetch");
 const multer = require("multer");
 const fs = require("fs");
@@ -8,6 +8,7 @@ const ExifImage = require("exif").ExifImage;
 const cors = require("cors");
 const app = express();
 const bodyParser = require("body-parser");
+const { gql } = require("@apollo/client");
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -17,20 +18,7 @@ app.use("/thumbnails", express.static("thumbnails"));
 
 const URI_URL = "http://localhost:3000/images/";
 const THUMBNAIL_URL = "http://localhost:3000/thumbnails/";
-
-// Apollo client initialisation
-const client = new ApolloClient({
-  uri: "https://engaging-lamb-32.hasura.app/v1/graphql",
-  fetch: fetch,
-  cache: new InMemoryCache(),
-  headers: {
-    "content-typefrom": "application/json",
-    "x-hasura-role": "admin",
-    "x-hasura-admin-secret":
-      "2zd0hMBzf8WTOy6qXg25XQCy7DLy3vE2ZIzuoq4uxfr82bk6TuSBf7p1mu8ScyJb",
-  },
-});
-
+console.log(client);
 // Insert image to PostGre
 const insertPostgre = async (image, GPSLatitude, GPSLongitude) => {
   return client.mutate({

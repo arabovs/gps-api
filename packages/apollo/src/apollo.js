@@ -1,15 +1,15 @@
-import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
-import { createClient } from "graphql-ws";
-import {
+const { GraphQLWsLink } = require("@apollo/client/link/subscriptions");
+const { createClient } = require("graphql-ws");
+const {
   ApolloClient,
   InMemoryCache,
   createHttpLink,
   split,
   DocumentNode,
-} from "@apollo/client";
-import { getMainDefinition } from "@apollo/client/utilities";
-import isNode from "is-node";
-import ws from "ws";
+} = require("@apollo/client");
+const { getMainDefinition } = require("@apollo/client/utilities");
+const isNode = require("is-node");
+const ws = require("ws");
 
 const WS_URL = "wss://engaging-lamb-32.hasura.app/v1/graphql";
 const HTTP_URL = "https://engaging-lamb-32.hasura.app/v1/graphql";
@@ -49,7 +49,9 @@ const link = split(
   httpLink
 );
 
-export const client = new ApolloClient({
+const client = new ApolloClient({
   link: link,
   cache: new InMemoryCache(),
 });
+
+exports.client = client;
