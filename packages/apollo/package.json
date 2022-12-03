@@ -1,0 +1,11 @@
+{
+  "name": "apollo",
+  "version": "1.0.0",
+  "license": "MIT",
+  "dependencies": {
+    "@apollo/client": "^3.7.1",
+    "graphql-ws": "^5.11.2",
+    "is-node": "^1.0.2",
+    "ws": "^8.11.0"
+  }
+}
