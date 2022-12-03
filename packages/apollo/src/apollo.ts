@@ -7,31 +7,34 @@ import {
   split,
   DocumentNode,
 } from "@apollo/client";
+import { getMainDefinition } from "@apollo/client/utilities";
 import isNode from "is-node";
 import ws from "ws";
 
+const WS_URL = "wss://engaging-lamb-32.hasura.app/v1/graphql";
+const HTTP_URL = "https://engaging-lamb-32.hasura.app/v1/graphql";
+const ACCESS_TOKEN =
+  "2zd0hMBzf8WTOy6qXg25XQCy7DLy3vE2ZIzuoq4uxfr82bk6TuSBf7p1mu8ScyJb";
+const HEADERS = {
+  headers: {
+    "x-hasura-access-key": ACCESS_TOKEN,
+  },
+};
+
 const wsLink = new GraphQLWsLink(
   createClient({
-    url: "wss://engaging-lamb-32.hasura.app/v1/graphql",
+    url: WS_URL,
     webSocketImpl: isNode ? ws : null,
     connectionParams: () => {
-      return {
-        headers: {
-          "x-hasura-access-key":
-            "2zd0hMBzf8WTOy6qXg25XQCy7DLy3vE2ZIzuoq4uxfr82bk6TuSBf7p1mu8ScyJb",
-        },
-      };
+      return HEADERS;
     },
   })
 );
 
 const httpLink = createHttpLink({
-  uri: "https://engaging-lamb-32.hasura.app/v1/graphql",
+  uri: HTTP_URL,
   fetch,
-  headers: {
-    "x-hasura-access-key":
-      "2zd0hMBzf8WTOy6qXg25XQCy7DLy3vE2ZIzuoq4uxfr82bk6TuSBf7p1mu8ScyJb",
-  },
+  ...HEADERS,
 });
 
 const link = split(
@@ -50,6 +53,3 @@ export const client = new ApolloClient({
   link: link,
   cache: new InMemoryCache(),
 });
-function getMainDefinition(query: DocumentNode) {
-  throw new Error("Function not implemented.");
-}
