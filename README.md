@@ -5,7 +5,7 @@ Node RestAPI with PostGre which takes HTTP request to store images to file syste
 <p class="has-line-data" data-line-start="7" data-line-end="9">Frontend:<br>
 React MUI with PostGre that allows users to Upload, Delete images and interact with the RestAPI backend</p>
 <p class="has-line-data" data-line-start="7" data-line-end="9">Database System:<br>
-Hosted on Neon, accessed through Hasura GQL on: https://cloud.hasura.io/project/bb874bd4-941b-461d-8aff-2a3901eea265/console/data/default/schema/public/tables/myx_image/browse</p>
+Hosted on Neon, connecting via Hasura GQL engine: https://cloud.hasura.io/project/bb874bd4-941b-461d-8aff-2a3901eea265/console/data/default/schema/public/tables/myx_image/browse</p>
 <p class="has-line-data" data-line-start="10" data-line-end="15">Steps to run both applications:<br>
 <pre><code>git clone <a href="https://github.com/arabovs/myxrobotics.git">https://github.com/arabovs/myxrobotics.git</a><br>
 yarn<br>
