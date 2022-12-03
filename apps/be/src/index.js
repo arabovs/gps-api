@@ -182,7 +182,7 @@ const deleteFile = (file) => {
 /** Endpoints */
 // Upload Image
 app.post("/api/image-upload", upload.single("image"), (req, res) => {
-  const image = req.image;
+  const { image } = req;
   res.json({ message: "File uploaded successfully.", image });
   console.log("Image saved in images folder");
 });
