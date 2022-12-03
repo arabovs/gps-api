@@ -1,5 +1,15 @@
 {
   "name": "fe",
   "version": "1.0.0",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@emotion/react": "^11.10.5",
+    "@emotion/styled": "^11.10.5",
+    "@mui/icons-material": "^5.10.16",
+    "@mui/material": "^5.10.16",
+    "gatsby": "^5.2.0",
+    "gatsby-theme-material-ui": "^5.3.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  }
 }
