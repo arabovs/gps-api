@@ -1,20 +1,34 @@
 import React from "react";
 import { client } from "apollo";
-import { gql, useSubscription } from "@apollo/client";
+import { gql, useSubscription, useMutation } from "@apollo/client";
 import { Container, Grid, Button, Box, IconButton, Input } from "@mui/material";
-import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
-
+import { Star, StarBorder } from "@mui/icons-material";
 const API_ENDPOINT_UPLOAD = "http://localhost:3000/api/image-upload";
 const API_ENDPOINT_DELETE = "http://localhost:3000/api/image-delete";
 
 const IndexPage = () => {
+  const [changeStarred] = useMutation(
+    gql`
+      mutation MyMutation($starred: Boolean = true, $id: uuid!) {
+        update_myx_image_by_pk(
+          pk_columns: { id: $id }
+          _set: { starred: $starred }
+        ) {
+          id
+        }
+      }
+    `,
+    { client }
+  );
+
   const { data, loading, error } = useSubscription(
     gql`
       subscription($limit: Int) {
-        myx_image(limit: $limit) {
+        myx_image(limit: $limit, order_by: { created_at: asc }) {
           id
           thumb_path
           image
+          starred
         }
       }
     `,
@@ -62,7 +76,7 @@ const IndexPage = () => {
               <Button type="submit">Submit file</Button>
             </form>
           </Grid>
-          {data.myx_image.map(({ thumb_path, image }) => (
+          {data.myx_image.map(({ thumb_path, image, starred, id }) => (
             <Grid item xs={12} sm={6} md={4}>
               <Box>
                 <img src={thumb_path} width={250} />
@@ -84,9 +98,27 @@ const IndexPage = () => {
                 >
                   Delete Image
                 </Button>
-                <IconButton size="small" sx={{ mb: 3 }}>
-                  <RemoveRedEyeOutlinedIcon fontSize="small" />
-                </IconButton>
+                {starred ? (
+                  <IconButton
+                    onClick={() => {
+                      changeStarred({ variables: { id, starred: false } });
+                    }}
+                    size="small"
+                    sx={{ mb: 3 }}
+                  >
+                    <Star fontSize="small" />
+                  </IconButton>
+                ) : (
+                  <IconButton
+                    onClick={() => {
+                      changeStarred({ variables: { id } });
+                    }}
+                    size="small"
+                    sx={{ mb: 3 }}
+                  >
+                    <StarBorder fontSize="small" />
+                  </IconButton>
+                )}
               </Box>
             </Grid>
           ))}

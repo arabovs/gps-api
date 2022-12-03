@@ -1,6 +1,5 @@
 const express = require("express");
 const { client } = require("apollo");
-const fetch = require("cross-fetch");
 const multer = require("multer");
 const fs = require("fs");
 const sharp = require("sharp");
@@ -190,7 +189,6 @@ app.post("/api/image-upload", upload.single("image"), (req, res) => {
 
 // Delete Image
 app.post("/api/image-delete", (req, res) => {
-  console.log(req.body);
   deleteFile(req.body.image);
   deletePostGre(req.body.image);
   res.json({ message: "File deleted successfully." });
@@ -210,15 +208,14 @@ app.get("/api/thumbnail-get", async function (req, res) {
 
 // Get images within a Geographical Bounding Box
 app.get("/api/image-geobb-get", async function (req, res) {
-  const results = await getGeoBB(
+  const { data } = await getGeoBB(
     req.body.minlat,
     req.body.maxlat,
     req.body.minlon,
     req.body.maxlon
   );
 
-  images = results.data;
-  res.json({ images });
+  res.json(data.myx_image);
 });
 
 app.listen(3000, () => {
