@@ -18,8 +18,9 @@ app.use("/thumbnails", express.static("thumbnails"));
 
 const URI_URL = "http://localhost:3000/images/";
 const THUMBNAIL_URL = "http://localhost:3000/thumbnails/";
-// Insert image to PostGre
-const insertPostgre = async (image, GPSLatitude, GPSLongitude) => {
+
+// Postgre insert image to db
+const insertImagePostGre = async (image, GPSLatitude, GPSLongitude) => {
   return client.mutate({
     mutation: gql`
       mutation GetRates(
@@ -52,7 +53,7 @@ const insertPostgre = async (image, GPSLatitude, GPSLongitude) => {
   });
 };
 
-// GQL GEOBB
+// Postgre get all images within a Geographical Bounding Box
 const getGeoBB = async (minlat, maxlat, minlon, maxlon) => {
   return client.query({
     query: gql`
@@ -91,19 +92,7 @@ const getGeoBB = async (minlat, maxlat, minlon, maxlon) => {
   });
 };
 
-app.get("/api/image-geobb-get", async function (req, res) {
-  const results = await getGeoBB(
-    req.body.minlat,
-    req.body.maxlat,
-    req.body.minlon,
-    req.body.maxlon
-  );
-
-  res.json({ results });
-  //res.sendFile("images/" + req.body.file, { root: "." });
-});
-
-// Insert image to PostGre
+// Postgre delete image
 const deletePostGre = async (image) => {
   return client.mutate({
     mutation: gql`
@@ -119,7 +108,8 @@ const deletePostGre = async (image) => {
   });
 };
 
-const imageToPostgre = async (file_name) => {
+// processes image EXIF data and stores it to database
+const processImage = async (file_name) => {
   try {
     new ExifImage(
       { image: "images/" + file_name },
@@ -145,7 +135,7 @@ const imageToPostgre = async (file_name) => {
                   if (err) {
                     console.log(err);
                   } else {
-                    insertPostgre(file_name, GPSLatitude, GPSLongitude);
+                    insertImagePostGre(file_name, GPSLatitude, GPSLongitude);
                   }
                 }
               );
@@ -158,6 +148,28 @@ const imageToPostgre = async (file_name) => {
   }
 };
 
+// Storing image to file and image processing
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "images");
+  },
+  filename: function (req, file, cb) {
+    const file_name = file.originalname;
+    console.log(file_name);
+    try {
+      setTimeout(function cb() {
+        processImage(file_name);
+      }, 500);
+    } catch (error) {
+      console.log("unable to save file");
+    }
+    cb(null, file_name);
+  },
+});
+
+const upload = multer({ storage: storage });
+
+// Delete file from file system
 const deleteFile = (file) => {
   fs.unlink("images/" + file, (err) => {
     if (err) {
@@ -168,34 +180,15 @@ const deleteFile = (file) => {
   });
 };
 
-// maybe to remove oldstyle
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "images");
-  },
-  filename: function (req, file, cb) {
-    const file_name = file.originalname;
-    console.log(file_name);
-    try {
-      setTimeout(function cb() {
-        imageToPostgre(file_name);
-      }, 500);
-    } catch (error) {
-      console.log("awaiting file upload");
-    }
-    cb(null, file_name);
-  },
-});
-
-const upload = multer({ storage: storage });
-
+/** Endpoints */
+// Upload Image
 app.post("/api/image-upload", upload.single("image"), (req, res) => {
-  //console.log(req);
   const image = req.image;
   res.json({ message: "File uploaded successfully.", image });
   console.log("Image saved in images folder");
 });
 
+// Delete Image
 app.post("/api/image-delete", (req, res) => {
   console.log(req.body);
   deleteFile(req.body.image);
@@ -203,16 +196,29 @@ app.post("/api/image-delete", (req, res) => {
   res.json({ message: "File deleted successfully." });
 });
 
+// Get Image
 app.get("/api/image-get", function (req, res) {
   res.json({ uri: URI_URL + req.body.file });
   //res.sendFile("images/" + req.body.file, { root: "." });
 });
 
+// Get Image's thumbnail
 app.get("/api/thumbnail-get", async function (req, res) {
   res.json({ uri: THUMBNAIL_URL + "thumbnail-" + req.body.file });
-  //res.sendFile("images/" + "thumbnail-" + req.body.file, { root: "." }, () => {
-  //deleteFile("thumbnail-" + req.body.file);
-  // });
+  //res.sendFile("images/" + "thumbnail-" + req.body.file, { root: "." });
+});
+
+// Get images within a Geographical Bounding Box
+app.get("/api/image-geobb-get", async function (req, res) {
+  const results = await getGeoBB(
+    req.body.minlat,
+    req.body.maxlat,
+    req.body.minlon,
+    req.body.maxlon
+  );
+
+  images = results.data;
+  res.json({ images });
 });
 
 app.listen(3000, () => {
