@@ -1,8 +1,8 @@
 <h1 class="code-line" data-line-start=0 data-line-end=1 ><a id="myxrobotics_0"></a>myxrobotics</h1>
 <p class="has-line-data" data-line-start="2" data-line-end="3">This application is part of my interview process with MYX Robotics and consists of a BE and FE applications.</p>
-<p class="has-line-data" data-line-start="4" data-line-end="6">BE:<br>
+<p class="has-line-data" data-line-start="4" data-line-end="6">Backend:<br>
 Node RestAPI with PostGre which takes HTTP request to store images to file system and database and provides image hosting</p>
-<p class="has-line-data" data-line-start="7" data-line-end="9">FE:<br>
+<p class="has-line-data" data-line-start="7" data-line-end="9">Frontend:<br>
 React MUI with PostGre that allows users to Upload, Delete images and interact with the RestAPI backend</p>
 <p class="has-line-data" data-line-start="10" data-line-end="15">Steps to run both applications:<br>
 <pre><code>git clone <a href="https://github.com/arabovs/myxrobotics.git">https://github.com/arabovs/myxrobotics.git</a><br>
