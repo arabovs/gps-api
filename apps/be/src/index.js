@@ -18,7 +18,6 @@ app.use("/thumbnails", express.static("thumbnails"));
 
 const URI_URL = "http://localhost:3000/images/";
 const THUMBNAIL_URL = "http://localhost:3000/thumbnails/";
-console.log(client);
 // Insert image to PostGre
 const insertPostgre = async (image, GPSLatitude, GPSLongitude) => {
   return client.mutate({
@@ -52,6 +51,57 @@ const insertPostgre = async (image, GPSLatitude, GPSLongitude) => {
     },
   });
 };
+
+// GQL GEOBB
+const getGeoBB = async (minlat, maxlat, minlon, maxlon) => {
+  return client.query({
+    query: gql`
+      query MyQuery(
+        $minlat: float8!
+        $maxlat: float8!
+        $minlon: float8!
+        $maxlon: float8!
+      ) {
+        myx_image(
+          where: {
+            GPSLatitude: { _gte: $minlat }
+            GPSLongitude: { _gte: $minlon }
+            _and: {
+              GPSLatitude: { _lte: $maxlat }
+              GPSLongitude: { _lte: $maxlon }
+            }
+          }
+          order_by: { GPSLatitude: asc, GPSLongitude: asc }
+          limit: 10
+        ) {
+          id
+          GPSLongitude
+          GPSLatitude
+          thumb_path
+          image_path
+        }
+      }
+    `,
+    variables: {
+      minlat,
+      maxlat,
+      minlon,
+      maxlon,
+    },
+  });
+};
+
+app.get("/api/image-geobb-get", async function (req, res) {
+  const results = await getGeoBB(
+    req.body.minlat,
+    req.body.maxlat,
+    req.body.minlon,
+    req.body.maxlon
+  );
+
+  res.json({ results });
+  //res.sendFile("images/" + req.body.file, { root: "." });
+});
 
 // Insert image to PostGre
 const deletePostGre = async (image) => {
@@ -163,18 +213,6 @@ app.get("/api/thumbnail-get", async function (req, res) {
   //res.sendFile("images/" + "thumbnail-" + req.body.file, { root: "." }, () => {
   //deleteFile("thumbnail-" + req.body.file);
   // });
-});
-
-app.get("/api/thumbnail-get2", function (req, res) {
-  data = sharp("./images/" + req.body.file)
-    .resize(250, 250)
-    .toBuffer()
-    .then((data) => {
-      res.end(data, "binary");
-    })
-    .catch((err) => {
-      console.log("Error");
-    });
 });
 
 app.listen(3000, () => {
