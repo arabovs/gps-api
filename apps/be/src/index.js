@@ -1,14 +1,14 @@
 const express = require("express");
 const { client } = require("apollo");
+const { gql } = require("@apollo/client");
 const multer = require("multer");
 const fs = require("fs");
 const sharp = require("sharp");
 const ExifImage = require("exif").ExifImage;
 const cors = require("cors");
-const app = express();
 const bodyParser = require("body-parser");
-const { gql } = require("@apollo/client");
 
+const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static("public"));
@@ -107,6 +107,11 @@ const deletePostGre = async (image) => {
   });
 };
 
+// GPS cleaner
+const getGPSFromArray = (gps) => {
+  return gps[0] + gps[1] / 60 + gps[2] / 3600;
+};
+
 // processes image EXIF data and stores it to database
 const processImage = async (file_name) => {
   try {
@@ -115,16 +120,8 @@ const processImage = async (file_name) => {
       async function (error, exifData) {
         if (error) console.log("Error: " + error.message);
         else {
-          console.log(exifData.gps);
-          const GPSLatitude =
-            exifData.gps["GPSLatitude"][0] +
-            exifData.gps["GPSLatitude"][1] / 60 +
-            exifData.gps["GPSLatitude"][2] / 3600;
-          const GPSLongitude =
-            exifData.gps["GPSLongitude"][0] +
-            exifData.gps["GPSLongitude"][1] / 60 +
-            exifData.gps["GPSLongitude"][2] / 3600;
-
+          const GPSLatitude = getGPSFromArray(exifData.gps["GPSLatitude"]);
+          const GPSLongitude = getGPSFromArray(exifData.gps["GPSLongitude"]);
           setTimeout(function cb() {
             sharp("./images/" + file_name)
               .resize(250, 250)
@@ -154,7 +151,6 @@ const storage = multer.diskStorage({
   },
   filename: function (req, file, cb) {
     const file_name = file.originalname;
-    console.log(file_name);
     try {
       setTimeout(function cb() {
         processImage(file_name);

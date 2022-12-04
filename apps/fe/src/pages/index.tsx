@@ -1,12 +1,25 @@
 import React from "react";
 import { client } from "apollo";
-import { gql, useSubscription, useMutation } from "@apollo/client";
-import { Container, Grid, Button, Box, IconButton, Input } from "@mui/material";
+import { gql, useSubscription, useMutation, useQuery } from "@apollo/client";
+import {
+  Container,
+  Grid,
+  Button,
+  Box,
+  IconButton,
+  Input,
+  Pagination,
+  useMediaQuery,
+} from "@mui/material";
 import { Star, StarBorder } from "@mui/icons-material";
 const API_ENDPOINT_UPLOAD = "http://localhost:3000/api/image-upload";
 const API_ENDPOINT_DELETE = "http://localhost:3000/api/image-delete";
 
 const IndexPage = () => {
+  const [page, setPage] = React.useState(1);
+  const handlePageChange = (event, value: number) => {
+    setPage(value);
+  };
   const [changeStarred] = useMutation(
     gql`
       mutation MyMutation($starred: Boolean = true, $id: uuid!) {
@@ -21,10 +34,27 @@ const IndexPage = () => {
     { client }
   );
 
+  const paginationCountQuery = useQuery(
+    gql`
+      query MyQuery {
+        myx_image_aggregate {
+          aggregate {
+            count
+          }
+        }
+      }
+    `,
+    { client }
+  );
+
   const { data, loading, error } = useSubscription(
     gql`
-      subscription($limit: Int) {
-        myx_image(limit: $limit, order_by: { created_at: asc }) {
+      subscription($limit: Int, $offset: Int) {
+        myx_image(
+          limit: $limit
+          order_by: { created_at: asc }
+          offset: $offset
+        ) {
           id
           thumb_path
           image
@@ -35,6 +65,7 @@ const IndexPage = () => {
     {
       variables: {
         limit: 30,
+        offset: 30 * page - 30,
       },
       client,
     }
@@ -122,6 +153,18 @@ const IndexPage = () => {
               </Box>
             </Grid>
           ))}
+          <Grid item sm={12} sx={{ display: "flex", justifyContent: "center" }}>
+            {paginationCountQuery?.data && (
+              <Pagination
+                count={Math.ceil(
+                  paginationCountQuery.data?.myx_image_aggregate.aggregate
+                    .count / 30
+                )}
+                page={page}
+                onChange={handlePageChange}
+              />
+            )}
+          </Grid>
         </Grid>
       </Container>
     </div>
